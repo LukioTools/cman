@@ -81,6 +81,7 @@ public:
         std::pair("CFLAGS", "-Wall -std=c++20"),
         std::pair("SCANDIR", "test/src"),
         std::pair("OUTDIR", "test/bin"),
+        std::pair("OUTFILE", "out.a"),
         std::pair("EXT", ".c++ .cpp .c"),
         std::pair("CACHE", default_cache),
     };
@@ -113,6 +114,18 @@ public:
         };
 
         return *this;
+    }
+
+
+    Process combine(){
+        auto of = config["OUTFILE"];
+        auto od = config["OUTDIR"];
+        if(of.empty()) of = "out.a";
+
+        auto out = (std::filesystem::path(od) /= of).string();
+        auto command = "ar rcs " + out + " $(find " + od + " -name \"*.o\")" ;
+        std::cout << command << std::endl;
+        return Process::spawn(command.c_str());
     }
 
 
