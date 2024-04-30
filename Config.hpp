@@ -16,7 +16,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-
+#include <boost/crc.hpp>
 
 //heavy usage for span where implementation was lazy
 class Config{
@@ -35,13 +35,22 @@ public:
     Targets targets;
 
     size_t hash(std::istream& file){
-        return 0;
+        boost::crc_32_type  result;
+        if(file)
+            do {
+            char buffer[0xFFFF];
+            file.read(buffer, 0xFFFF);
+            
+            result.process_bytes(buffer, file.gcount());
+            }while (file);
+
+        return result.checksum();
     }
-    size_t hash(std::istream&& file){
-        return 0;
+    inline size_t hash(std::istream&& f){
+        return hash(f);
     }
-    size_t hash(const std::filesystem::path& file){
-        return hash(std::ifstream(file));
+    inline size_t hash(const std::filesystem::path& f){
+        return hash(std::ifstream(f));
     }
 
 
